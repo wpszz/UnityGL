@@ -82,9 +82,17 @@ public class GLMathFunction : MonoBehaviour
             for (int j = 0; j < scale; j++)
             {
                 float x1 = CaculateX(i + j * deltaScale);
+                if (!IsValidFloat(x1))
+                    continue;
                 float y1 = CaculateY(x1);
+                if (!IsValidFloat(y1))
+                    continue;
                 float x2 = CaculateX(i + (j + 1) * deltaScale);
+                if (!IsValidFloat(x2))
+                    continue;
                 float y2 = CaculateY(x2);
+                if (!IsValidFloat(y2))
+                    continue;
                 GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
                 GL.Vertex3(PixelToRelativeX(x2) + offsetX, PixelToRelativeX(y2) + offsetY, 0);
             }
@@ -101,6 +109,11 @@ public class GLMathFunction : MonoBehaviour
         GL.End();
 
         GL.PopMatrix();
+    }
+
+    private bool IsValidFloat(float v)
+    {
+        return !float.IsNaN(v) && !float.IsInfinity(v);
     }
 
     private float CaculateX(float x)
@@ -169,6 +182,7 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
             new MathFunctionInfo("powers/x^0.1(10√x)", x => { return Mathf.Pow(x, 0.1f); }),
             new MathFunctionInfo("exps/exp(x)", x => { return Mathf.Exp(x); }),
+            new MathFunctionInfo("exps/0.5^x", x => { return Mathf.Pow(0.5f, x); }),
             new MathFunctionInfo("exps/2^x", x => { return Mathf.Pow(2, x); }),
             new MathFunctionInfo("exps/3^x", x => { return Mathf.Pow(3, x); }),
             new MathFunctionInfo("exps/x^x", x => { return Mathf.Pow(x, x); }),
