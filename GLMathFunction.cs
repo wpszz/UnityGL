@@ -29,6 +29,8 @@ public class GLMathFunction : MonoBehaviour
     private void Awake()
     {
         CreateTempMat();
+
+        InitMathFunctions();
     }
 
     private void CreateTempMat()
@@ -116,6 +118,88 @@ public class GLMathFunction : MonoBehaviour
         //return Mathf.Sin(x) + Mathf.Cos(x);
         //return -5 * x * x + 3 * x + 2;
         //return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4);
-        return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2)));   // Gaussian
+        //return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2)));   // Gaussian
+        return selectFunc(x);
+    }
+
+    public delegate float MathFunction(float x);
+    public class MathFunctionInfo
+    {
+        public string name;
+        public MathFunction func;
+        public MathFunctionInfo(string name, MathFunction func)
+        {
+            this.name = name;
+            this.func = func;
+        }
+    }
+
+    public MathFunctionInfo[] funcs { get;set;}
+    public int selectFuncIndex { get; set; }
+    public MathFunction selectFunc
+    {
+        get
+        {
+            if (funcs != null && selectFuncIndex >= 0 && selectFuncIndex < funcs.Length)
+                return funcs[selectFuncIndex].func;
+            return CaculateX;
+        }
+    }
+    public string[] funcNames
+    {
+        get
+        {
+            if (funcs == null)
+                InitMathFunctions();
+            string[] names = new string[funcs.Length];
+            for (int i = 0; i < funcs.Length; i++)
+                names[i] = funcs[i].name;
+            return names;
+        }
+    }
+
+    private void InitMathFunctions()
+    {
+        funcs = new MathFunctionInfo[]
+        {
+            new MathFunctionInfo("const", x => { return 0; }),
+            new MathFunctionInfo("x", x => { return x; }),
+            new MathFunctionInfo("powers/x^2", x => { return x * x; }),
+            new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
+            new MathFunctionInfo("logs/√x", x => { return Mathf.Log(x, 2); }),
+            new MathFunctionInfo("logs/x√x", x => { return x * Mathf.Log(x, 2); }),
+            new MathFunctionInfo("logs/log(x, 10)", x => { return Mathf.Log(x, 10); }),
+            new MathFunctionInfo("logs/xlog(x, 10)", x => { return x * Mathf.Log(x, 10); }),
+            new MathFunctionInfo("triangles/sin(x)", x => { return Mathf.Sin(x); }),
+            new MathFunctionInfo("triangles/cos(x)", x => { return Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/tan(x)", x => { return Mathf.Tan(x); }),
+            new MathFunctionInfo("triangles/asin(x)", x => { return Mathf.Asin(x); }),
+            new MathFunctionInfo("triangles/acos(x)", x => { return Mathf.Acos(x); }),
+            new MathFunctionInfo("triangles/atan(x)", x => { return Mathf.Atan(x); }),
+            new MathFunctionInfo("triangles/sin(x) + cos(x)", x => { return Mathf.Sin(x) + Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/7sin(x) + 2cos(x)", x => { return 7 * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/7sin(x)^2 + 2cos(x)", x => { return 7 * Mathf.Sin(x) * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/7sin(x^2) + 2cos(x)", x => { return 7 * Mathf.Sin(x * x) + 2 * Mathf.Cos(x); }),
+            new MathFunctionInfo("parabolics/-5x^2 + 3x + 2", x => { return -5 * x * x + 3 * x + 2; }),
+            new MathFunctionInfo("multinomials/5x^7 + 3x^4", x => { return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4); }),
+            new MathFunctionInfo("Gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
+        };
     }
 }
+
+
+#if UNITY_EDITOR
+[UnityEditor.CustomEditor(typeof(GLMathFunction), true)]
+public class GLMathFunctionEditor : UnityEditor.Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        GLMathFunction comp = target as GLMathFunction;
+        UnityEditor.EditorGUILayout.Separator();
+        UnityEditor.EditorGUILayout.LabelField("Select Function");
+        comp.selectFuncIndex = UnityEditor.EditorGUILayout.Popup(comp.selectFuncIndex, comp.funcNames);
+    }
+}
+#endif
