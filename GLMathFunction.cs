@@ -68,10 +68,10 @@ public class GLMathFunction : MonoBehaviour
 
         GL.Begin(GL.LINES);
         GL.Color(grid);
-        GL.Vertex3(0, 0.5f, 0);
-        GL.Vertex3(1, 0.5f, 0);
-        GL.Vertex3(0.5f, 0, 0);
-        GL.Vertex3(0.5f, 1, 0);
+        GL.Vertex3(0, offsetY, 0);
+        GL.Vertex3(1, offsetY, 0);
+        GL.Vertex3(offsetX, 0, 0);
+        GL.Vertex3(offsetX, 1, 0);
         GL.End();
 
         GL.Begin(GL.LINES);
@@ -166,9 +166,16 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("x", x => { return x; }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
             new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
-            new MathFunctionInfo("logs/√x", x => { return Mathf.Log(x, 2); }),
-            new MathFunctionInfo("logs/x√x", x => { return x * Mathf.Log(x, 2); }),
-            new MathFunctionInfo("logs/log(x, 10)", x => { return Mathf.Log(x, 10); }),
+            new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
+            new MathFunctionInfo("powers/x^0.1(10√x)", x => { return Mathf.Pow(x, 0.1f); }),
+            new MathFunctionInfo("exps/exp(x)", x => { return Mathf.Exp(x); }),
+            new MathFunctionInfo("exps/2^x", x => { return Mathf.Pow(2, x); }),
+            new MathFunctionInfo("exps/3^x", x => { return Mathf.Pow(3, x); }),
+            new MathFunctionInfo("exps/x^x", x => { return Mathf.Pow(x, x); }),
+            new MathFunctionInfo("logs/log(x, 2)", x => { return Mathf.Log(x); }),
+            new MathFunctionInfo("logs/log(x, 0.5)", x => { return Mathf.Log(x, 0.5f); }),
+            new MathFunctionInfo("logs/xlog(x, 2)", x => { return x * Mathf.Log(x, 2); }),
+            new MathFunctionInfo("logs/log(x, 10)", x => { return Mathf.Log10(x); }),
             new MathFunctionInfo("logs/xlog(x, 10)", x => { return x * Mathf.Log(x, 10); }),
             new MathFunctionInfo("triangles/sin(x)", x => { return Mathf.Sin(x); }),
             new MathFunctionInfo("triangles/cos(x)", x => { return Mathf.Cos(x); }),
@@ -180,6 +187,7 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("triangles/7sin(x) + 2cos(x)", x => { return 7 * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x)^2 + 2cos(x)", x => { return 7 * Mathf.Sin(x) * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x^2) + 2cos(x)", x => { return 7 * Mathf.Sin(x * x) + 2 * Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/7sin(x^3) + 2cos(√x) - tan(x^5)", x => { return 7 * Mathf.Sin(x * x * x) + 2 * Mathf.Cos(Mathf.Log(x, 2)) - Mathf.Tan(Mathf.Pow(x, 5)); }),
             new MathFunctionInfo("parabolics/-5x^2 + 3x + 2", x => { return -5 * x * x + 3 * x + 2; }),
             new MathFunctionInfo("multinomials/5x^7 + 3x^4", x => { return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4); }),
             new MathFunctionInfo("Gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
