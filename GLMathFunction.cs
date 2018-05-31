@@ -29,8 +29,6 @@ public class GLMathFunction : MonoBehaviour
     private void Awake()
     {
         CreateTempMat();
-
-        InitMathFunctions();
     }
 
     private void CreateTempMat()
@@ -74,39 +72,47 @@ public class GLMathFunction : MonoBehaviour
         GL.Vertex3(offsetX, 1, 0);
         GL.End();
 
-        GL.Begin(GL.LINES);
-        GL.Color(foreground);
-        float deltaScale = 1.0f / scale;
-        for (int i = -count; i < count - 1; i++)
+        Color originColor = foreground;
+        int originSelectIndex = selectFuncIndex;
+        int historyCount = historys.Count;
+        for (int h = 0; h <= historyCount; h++)
         {
-            for (int j = 0; j < scale; j++)
+            if (h == historyCount)
             {
-                float x1 = CaculateX(i + j * deltaScale);
-                if (!IsValidFloat(x1))
-                    continue;
-                float y1 = CaculateY(x1);
-                if (!IsValidFloat(y1))
-                    continue;
-                float x2 = CaculateX(i + (j + 1) * deltaScale);
-                if (!IsValidFloat(x2))
-                    continue;
-                float y2 = CaculateY(x2);
-                if (!IsValidFloat(y2))
-                    continue;
-                GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
-                GL.Vertex3(PixelToRelativeX(x2) + offsetX, PixelToRelativeX(y2) + offsetY, 0);
+                foreground = originColor;
+                selectFuncIndex = originSelectIndex;
+            }
+            else
+            {
+                foreground = historys[h].color;
+                selectFuncIndex = historys[h].index;
             }
 
-            /*
-            float x1 = CaculateX(i);
-            float y1 = CaculateY(x1);
-            float x2 = CaculateX(i + 1);
-            float y2 = CaculateY(x2);
-            GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
-            GL.Vertex3(PixelToRelativeX(x2) + offsetX, PixelToRelativeX(y2) + offsetY, 0);
-            */
+            GL.Begin(GL.LINES);
+            GL.Color(foreground);
+            float deltaScale = 1.0f / scale;
+            for (int i = -count; i < count - 1; i++)
+            {
+                for (int j = 0; j < scale; j++)
+                {
+                    float x1 = CaculateX(i + j * deltaScale);
+                    if (!IsValidFloat(x1))
+                        continue;
+                    float y1 = CaculateY(x1);
+                    if (!IsValidFloat(y1))
+                        continue;
+                    float x2 = CaculateX(i + (j + 1) * deltaScale);
+                    if (!IsValidFloat(x2))
+                        continue;
+                    float y2 = CaculateY(x2);
+                    if (!IsValidFloat(y2))
+                        continue;
+                    GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
+                    GL.Vertex3(PixelToRelativeX(x2) + offsetX, PixelToRelativeX(y2) + offsetY, 0);
+                }
+            }
+            GL.End();
         }
-        GL.End();
 
         GL.PopMatrix();
     }
@@ -123,17 +129,37 @@ public class GLMathFunction : MonoBehaviour
 
     private float CaculateY(float x)
     {
-        //return x;
-        //return x * x;
-        //return x * x * x;
-        //return Mathf.Sin(x);
-        //return Mathf.Cos(x);
-        //return Mathf.Sin(x) + Mathf.Cos(x);
-        //return -5 * x * x + 3 * x + 2;
-        //return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4);
-        //return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2)));   // Gaussian
-        return selectFunc(x);
+        return GetFunctionInfo(selectFuncIndex).func(x);
     }
+
+    //==================================================================================
+
+    public class HistoryInfo
+    {
+        public int index;
+        public Color color;
+    }
+    private List<HistoryInfo> _historys;
+    public List<HistoryInfo> historys
+    {
+        get
+        {
+            if (_historys == null)
+                _historys = new List<HistoryInfo>();
+            return _historys;
+        }
+    }
+    public void AddHistory()
+    {
+        historys.Add(new HistoryInfo() { index = selectFuncIndex, color = foreground });
+    }
+    public void RemoveHistory(int index)
+    {
+        if (historys.Count > index)
+            historys.RemoveAt(index);
+    }
+
+    //==================================================================================
 
     public delegate float MathFunction(float x);
     public class MathFunctionInfo
@@ -147,33 +173,41 @@ public class GLMathFunction : MonoBehaviour
         }
     }
 
-    public MathFunctionInfo[] funcs { get;set;}
-    public int selectFuncIndex { get; set; }
-    public MathFunction selectFunc
+    private MathFunctionInfo[] _funcs;
+    public MathFunctionInfo[] funcs
     {
         get
         {
-            if (funcs != null && selectFuncIndex >= 0 && selectFuncIndex < funcs.Length)
-                return funcs[selectFuncIndex].func;
-            return CaculateX;
+            if (_funcs == null)
+                _funcs = InitMathFunctions();
+            return _funcs;
         }
     }
     public string[] funcNames
     {
         get
         {
-            if (funcs == null)
-                InitMathFunctions();
             string[] names = new string[funcs.Length];
             for (int i = 0; i < funcs.Length; i++)
                 names[i] = funcs[i].name;
             return names;
         }
     }
-
-    private void InitMathFunctions()
+    public int selectFuncIndex
     {
-        funcs = new MathFunctionInfo[]
+        get;
+        set;
+    }
+    public MathFunctionInfo GetFunctionInfo(int index)
+    {
+        if (index >= 0 && index < funcs.Length)
+            return funcs[index];
+        return funcs[0];
+    }
+
+    private MathFunctionInfo[] InitMathFunctions()
+    {
+        return new MathFunctionInfo[]
         {
             new MathFunctionInfo("const", x => { return 0; }),
             new MathFunctionInfo("x", x => { return x; }),
@@ -203,7 +237,9 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("triangles/7sin(x^2) + 2cos(x)", x => { return 7 * Mathf.Sin(x * x) + 2 * Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x^3) + 2cos(√x) - tan(x^5)", x => { return 7 * Mathf.Sin(x * x * x) + 2 * Mathf.Cos(Mathf.Log(x, 2)) - Mathf.Tan(Mathf.Pow(x, 5)); }),
             new MathFunctionInfo("parabolics/-5x^2 + 3x + 2", x => { return -5 * x * x + 3 * x + 2; }),
+            new MathFunctionInfo("parabolics/(-5x^2 + 3x + 2)'", x => { return -10 * x + 3; }),
             new MathFunctionInfo("multinomials/5x^7 + 3x^4", x => { return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4); }),
+            new MathFunctionInfo("multinomials/(5x^7 + 3x^4)'", x => { return 35 * Mathf.Pow(x, 6) + 12 * Mathf.Pow(x, 3); }),
             new MathFunctionInfo("Gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
         };
     }
@@ -218,10 +254,36 @@ public class GLMathFunctionEditor : UnityEditor.Editor
     {
         base.OnInspectorGUI();
 
+        if (!Application.isPlaying)
+            return;
+
         GLMathFunction comp = target as GLMathFunction;
         UnityEditor.EditorGUILayout.Separator();
-        UnityEditor.EditorGUILayout.LabelField("Select Function");
+        UnityEditor.EditorGUILayout.BeginHorizontal();
+        UnityEditor.EditorGUILayout.LabelField("Select Function: ");
+        if (GUILayout.Button("Record", GUILayout.Width(50)))
+        {
+            comp.AddHistory();
+        }
+        UnityEditor.EditorGUILayout.EndHorizontal();
         comp.selectFuncIndex = UnityEditor.EditorGUILayout.Popup(comp.selectFuncIndex, comp.funcNames);
+        UnityEditor.EditorGUILayout.Separator();
+        UnityEditor.EditorGUILayout.LabelField("History: ");
+        for (int i = comp.historys.Count - 1; i >= 0; i--)
+        {
+            UnityEditor.EditorGUILayout.BeginHorizontal();
+            GLMathFunction.HistoryInfo history = comp.historys[i];
+            GLMathFunction.MathFunctionInfo info = comp.GetFunctionInfo(history.index);
+            UnityEditor.EditorGUILayout.LabelField(info.name);
+            history.color = UnityEditor.EditorGUILayout.ColorField(history.color, GUILayout.Width(50));
+            if (GUILayout.Button("Del", GUILayout.Width(50)))
+            {
+                comp.RemoveHistory(i);
+                UnityEditor.EditorGUILayout.EndHorizontal();
+                break;
+            }
+            UnityEditor.EditorGUILayout.EndHorizontal();
+        }
     }
 }
 #endif
