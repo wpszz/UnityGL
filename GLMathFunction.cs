@@ -73,19 +73,22 @@ public class GLMathFunction : MonoBehaviour
         GL.End();
 
         Color originColor = foreground;
-        int originSelectIndex = selectFuncIndex;
+        int originSelectIndexX = selectFuncIndexX;
+        int originSelectIndexY = selectFuncIndexY;
         int historyCount = historys.Count;
         for (int h = 0; h <= historyCount; h++)
         {
             if (h == historyCount)
             {
                 foreground = originColor;
-                selectFuncIndex = originSelectIndex;
+                selectFuncIndexX = originSelectIndexX;
+                selectFuncIndexY = originSelectIndexY;
             }
             else
             {
                 foreground = historys[h].color;
-                selectFuncIndex = historys[h].index;
+                selectFuncIndexX = historys[h].indexX;
+                selectFuncIndexY = historys[h].indexY;
             }
 
             GL.Begin(GL.LINES);
@@ -95,16 +98,18 @@ public class GLMathFunction : MonoBehaviour
             {
                 for (int j = 0; j < scale; j++)
                 {
-                    float x1 = CaculateX(i + j * deltaScale);
+                    float t1 = i + j * deltaScale;
+                    float x1 = CaculateX(t1);
                     if (!IsValidFloat(x1))
                         continue;
-                    float y1 = CaculateY(x1);
+                    float y1 = CaculateY(t1);
                     if (!IsValidFloat(y1))
                         continue;
-                    float x2 = CaculateX(i + (j + 1) * deltaScale);
+                    float t2 = i + (j + 1) * deltaScale;
+                    float x2 = CaculateX(t2);
                     if (!IsValidFloat(x2))
                         continue;
-                    float y2 = CaculateY(x2);
+                    float y2 = CaculateY(t2);
                     if (!IsValidFloat(y2))
                         continue;
                     GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
@@ -122,21 +127,22 @@ public class GLMathFunction : MonoBehaviour
         return !float.IsNaN(v) && !float.IsInfinity(v);
     }
 
-    private float CaculateX(float x)
+    private float CaculateX(float t)
     {
-        return x;
+        return GetFunctionInfo(selectFuncIndexX).func(t);
     }
 
-    private float CaculateY(float x)
+    private float CaculateY(float t)
     {
-        return GetFunctionInfo(selectFuncIndex).func(x);
+        return GetFunctionInfo(selectFuncIndexY).func(t);
     }
 
     //==================================================================================
 
     public class HistoryInfo
     {
-        public int index;
+        public int indexX;
+        public int indexY;
         public Color color;
     }
     private List<HistoryInfo> _historys;
@@ -151,7 +157,7 @@ public class GLMathFunction : MonoBehaviour
     }
     public void AddHistory()
     {
-        historys.Add(new HistoryInfo() { index = selectFuncIndex, color = foreground });
+        historys.Add(new HistoryInfo() { indexX = selectFuncIndexX, indexY = selectFuncIndexY, color = foreground });
     }
     public void RemoveHistory(int index)
     {
@@ -193,7 +199,12 @@ public class GLMathFunction : MonoBehaviour
             return names;
         }
     }
-    public int selectFuncIndex
+    public int selectFuncIndexY
+    {
+        get;
+        set;
+    }
+    public int selectFuncIndexX
     {
         get;
         set;
@@ -209,8 +220,11 @@ public class GLMathFunction : MonoBehaviour
     {
         return new MathFunctionInfo[]
         {
+            new MathFunctionInfo("self", t => { return t; }),
+
             new MathFunctionInfo("const", x => { return 0; }),
             new MathFunctionInfo("x", x => { return x; }),
+            new MathFunctionInfo("|x|", x => { return Mathf.Abs(x); }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
             new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
             new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
@@ -231,6 +245,9 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("triangles/asin(x)", x => { return Mathf.Asin(x); }),
             new MathFunctionInfo("triangles/acos(x)", x => { return Mathf.Acos(x); }),
             new MathFunctionInfo("triangles/atan(x)", x => { return Mathf.Atan(x); }),
+            new MathFunctionInfo("triangles/atan2(x, 1)", x => { return Mathf.Atan2(x, 1); }),
+            new MathFunctionInfo("triangles/sin(x)÷x", x => { return Mathf.Sin(x) / x; }),
+            new MathFunctionInfo("triangles/cos(0.5π - x)", x => { return Mathf.Cos(0.5f * Mathf.PI - x); }),
             new MathFunctionInfo("triangles/sin(x) + cos(x)", x => { return Mathf.Sin(x) + Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x) + 2cos(x)", x => { return 7 * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x)^2 + 2cos(x)", x => { return 7 * Mathf.Sin(x) * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
@@ -240,7 +257,9 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("parabolics/(-5x^2 + 3x + 2)'", x => { return -10 * x + 3; }),
             new MathFunctionInfo("multinomials/5x^7 + 3x^4", x => { return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4); }),
             new MathFunctionInfo("multinomials/(5x^7 + 3x^4)'", x => { return 35 * Mathf.Pow(x, 6) + 12 * Mathf.Pow(x, 3); }),
-            new MathFunctionInfo("Gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
+            new MathFunctionInfo("gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
+            new MathFunctionInfo("heart/a(1 - sin(r)) * cos(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
+            new MathFunctionInfo("heart/a(1 - sin(r)) * sin(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
         };
     }
 }
@@ -266,15 +285,17 @@ public class GLMathFunctionEditor : UnityEditor.Editor
             comp.AddHistory();
         }
         UnityEditor.EditorGUILayout.EndHorizontal();
-        comp.selectFuncIndex = UnityEditor.EditorGUILayout.Popup(comp.selectFuncIndex, comp.funcNames);
+        comp.selectFuncIndexX = UnityEditor.EditorGUILayout.Popup("X:", comp.selectFuncIndexX, comp.funcNames);
+        comp.selectFuncIndexY = UnityEditor.EditorGUILayout.Popup("Y:", comp.selectFuncIndexY, comp.funcNames);
         UnityEditor.EditorGUILayout.Separator();
         UnityEditor.EditorGUILayout.LabelField("History: ");
         for (int i = comp.historys.Count - 1; i >= 0; i--)
         {
             UnityEditor.EditorGUILayout.BeginHorizontal();
             GLMathFunction.HistoryInfo history = comp.historys[i];
-            GLMathFunction.MathFunctionInfo info = comp.GetFunctionInfo(history.index);
-            UnityEditor.EditorGUILayout.LabelField(info.name);
+            GLMathFunction.MathFunctionInfo xInfo = comp.GetFunctionInfo(history.indexX);
+            GLMathFunction.MathFunctionInfo yInfo = comp.GetFunctionInfo(history.indexY);
+            UnityEditor.EditorGUILayout.LabelField(xInfo.name + "/" + yInfo.name);
             history.color = UnityEditor.EditorGUILayout.ColorField(history.color, GUILayout.Width(50));
             if (GUILayout.Button("Del", GUILayout.Width(50)))
             {
