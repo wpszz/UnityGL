@@ -226,6 +226,10 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("base/x", x => { return x; }),
             new MathFunctionInfo("base/|x|", x => { return Mathf.Abs(x); }),
             new MathFunctionInfo("base/1÷x", x => { return 1 / x; }),
+            new MathFunctionInfo("base/sign(x)", x => { return Mathf.Sign(x); }),
+            new MathFunctionInfo("base/repeat(x, l)", x => { return Mathf.Repeat(x, Mean); }),
+            new MathFunctionInfo("CG/step(a, x)", x => { return x >= Mean ? 1 : 0; }),
+            new MathFunctionInfo("CG/frac(x)", x => { return x - (int)x; }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
             new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
             new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
@@ -270,6 +274,13 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("water/y => sin(x)", x => { return Mathf.Sin(x); }),
             new MathFunctionInfo("circle/x => a * sin(r)", r => { return Mean * Mathf.Sin(r); }),
             new MathFunctionInfo("circle/y => a * cos(r)", r => { return Mean * Mathf.Cos(r); }),
+            new MathFunctionInfo("random/uv", t => 
+            {
+                float u = Mathf.Repeat(t, 1);
+                float v = (int)(t / 2);
+                float w = Vector2.Dot(new Vector2(u, v), new Vector2(12.9898f, 78.233f)) * 43758.5453f;
+                return (w - (int)w) >= Mean ? 1 : 0;
+            }),
         };
     }
 }
