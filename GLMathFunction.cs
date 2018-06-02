@@ -222,9 +222,10 @@ public class GLMathFunction : MonoBehaviour
         {
             new MathFunctionInfo("self", t => { return t; }),
 
-            new MathFunctionInfo("const", x => { return 0; }),
-            new MathFunctionInfo("x", x => { return x; }),
-            new MathFunctionInfo("|x|", x => { return Mathf.Abs(x); }),
+            new MathFunctionInfo("base/const", x => { return 0; }),
+            new MathFunctionInfo("base/x", x => { return x; }),
+            new MathFunctionInfo("base/|x|", x => { return Mathf.Abs(x); }),
+            new MathFunctionInfo("base/1÷x", x => { return 1 / x; }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
             new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
             new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
@@ -247,6 +248,9 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("triangles/atan(x)", x => { return Mathf.Atan(x); }),
             new MathFunctionInfo("triangles/atan2(x, 1)", x => { return Mathf.Atan2(x, 1); }),
             new MathFunctionInfo("triangles/sin(x)÷x", x => { return Mathf.Sin(x) / x; }),
+            new MathFunctionInfo("triangles/sin(1÷x)", x => { return Mathf.Sin(1 / x); }),
+            new MathFunctionInfo("triangles/cos(1÷x)", x => { return Mathf.Cos(1 / x); }),
+            new MathFunctionInfo("triangles/x * sin(1÷x)", x => { return x * Mathf.Sin(1 / x); }),
             new MathFunctionInfo("triangles/cos(0.5π - x)", x => { return Mathf.Cos(0.5f * Mathf.PI - x); }),
             new MathFunctionInfo("triangles/sin(x) + cos(x)", x => { return Mathf.Sin(x) + Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/7sin(x) + 2cos(x)", x => { return 7 * Mathf.Sin(x) + 2 * Mathf.Cos(x); }),
@@ -258,8 +262,14 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("multinomials/5x^7 + 3x^4", x => { return 5 * Mathf.Pow(x, 7) + 3 * Mathf.Pow(x, 4); }),
             new MathFunctionInfo("multinomials/(5x^7 + 3x^4)'", x => { return 35 * Mathf.Pow(x, 6) + 12 * Mathf.Pow(x, 3); }),
             new MathFunctionInfo("gaussian", x => { return 1 / (Mean * Mathf.Log(2 * Mathf.PI, 2)) * Mathf.Exp(-Mathf.Pow((x - Variance), 2) / (2 * Mathf.Pow(Mean, 2))); }),
-            new MathFunctionInfo("heart/a(1 - sin(r)) * cos(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
-            new MathFunctionInfo("heart/a(1 - sin(r)) * sin(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
+            new MathFunctionInfo("heart/x => a(1 - sin(r)) * cos(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
+            new MathFunctionInfo("heart/y => a(1 - sin(r)) * sin(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
+            new MathFunctionInfo("diamond/x => pingpong(t, a)", t => { return Mathf.PingPong(t, Mean); }),
+            new MathFunctionInfo("diamond/y => pingpong(t + 0.5a, a) - 0.5a", t => { return Mathf.PingPong(t + 0.5f * Mean, Mean) - 0.5f * Mean; }),
+            new MathFunctionInfo("water/x => a(1 - sin(r)) * cos(r)", r => { return Mean * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
+            new MathFunctionInfo("water/y => sin(x)", x => { return Mathf.Sin(x); }),
+            new MathFunctionInfo("circle/x => a * sin(r)", r => { return Mean * Mathf.Sin(r); }),
+            new MathFunctionInfo("circle/y => a * cos(r)", r => { return Mean * Mathf.Cos(r); }),
         };
     }
 }
