@@ -222,12 +222,14 @@ public class GLMathFunction : MonoBehaviour
         {
             new MathFunctionInfo("self", t => { return t; }),
 
-            new MathFunctionInfo("base/const", x => { return 0; }),
+            new MathFunctionInfo("base/const(0)", x => { return 0; }),
             new MathFunctionInfo("base/x", x => { return x; }),
             new MathFunctionInfo("base/|x|", x => { return Mathf.Abs(x); }),
             new MathFunctionInfo("base/1÷x", x => { return 1 / x; }),
             new MathFunctionInfo("base/sign(x)", x => { return Mathf.Sign(x); }),
             new MathFunctionInfo("base/repeat(x, l)", x => { return Mathf.Repeat(x, Mean); }),
+            new MathFunctionInfo("base/Deg2Rad", x => { return Mathf.Deg2Rad * x; }),
+            new MathFunctionInfo("base/Rad2Deg", x => { return Mathf.Rad2Deg * x; }),
             new MathFunctionInfo("CG/step(a, x)", x => { return x >= Mean ? 1 : 0; }),
             new MathFunctionInfo("CG/frac(x)", x => { return x - (int)x; }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
@@ -247,6 +249,9 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("triangles/sin(x)", x => { return Mathf.Sin(x); }),
             new MathFunctionInfo("triangles/cos(x)", x => { return Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/tan(x)", x => { return Mathf.Tan(x); }),
+            new MathFunctionInfo("triangles/sec(x)", x => { return 1 / Mathf.Cos(x); }),
+            new MathFunctionInfo("triangles/csc(x)", x => { return 1 / Mathf.Sin(x); }),
+            new MathFunctionInfo("triangles/cot(x)", x => { return 1 / Mathf.Tan(x); }),
             new MathFunctionInfo("triangles/asin(x)", x => { return Mathf.Asin(x); }),
             new MathFunctionInfo("triangles/acos(x)", x => { return Mathf.Acos(x); }),
             new MathFunctionInfo("triangles/atan(x)", x => { return Mathf.Atan(x); }),
@@ -281,6 +286,7 @@ public class GLMathFunction : MonoBehaviour
                 float w = Vector2.Dot(new Vector2(u, v), new Vector2(12.9898f, 78.233f)) * 43758.5453f;
                 return (w - (int)w) >= Mean ? 1 : 0;
             }),
+
         };
     }
 }
