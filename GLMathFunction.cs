@@ -279,6 +279,20 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("water/y => sin(x)", x => { return Mathf.Sin(x); }),
             new MathFunctionInfo("circle/x => a * sin(r)", r => { return Mean * Mathf.Sin(r); }),
             new MathFunctionInfo("circle/y => a * cos(r)", r => { return Mean * Mathf.Cos(r); }),
+            new MathFunctionInfo("hyperbolic/sinh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / 2; }),
+            new MathFunctionInfo("hyperbolic/cosh(x)", x => { return (Mathf.Exp(x) + Mathf.Exp(-x)) / 2; }),
+            new MathFunctionInfo("hyperbolic/tanh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / (Mathf.Exp(x) + Mathf.Exp(-x)); }),
+            new MathFunctionInfo("hyperbolic/sech(x)", x => { return 2 / (Mathf.Exp(x) + Mathf.Exp(-x)); }),
+            new MathFunctionInfo("hyperbolic/csch(x)", x => { return 2 / (Mathf.Exp(x) - Mathf.Exp(-x)); }),
+            new MathFunctionInfo("hyperbolic/coth(x)", x => { return (Mathf.Exp(x) + Mathf.Exp(-x)) / (Mathf.Exp(x) - Mathf.Exp(-x)); }),
+            new MathFunctionInfo("noise/PerlinNoise(x, 0)", x => { return Mathf.PerlinNoise(x * Mean, 0); }),
+            new MathFunctionInfo("noise/PerlinNoise(0, x)", x => { return Mathf.PerlinNoise(0, x * Mean); }),
+            new MathFunctionInfo("noise/PerlinNoise(x, x)", x => { return Mathf.PerlinNoise(x * Mean, x * Mean); }),
+            new MathFunctionInfo("random/rnd * x", x => { return UnityEngine.Random.value * x; }),
+            new MathFunctionInfo("random/rnd * x(fixed seed)", x => {
+                UnityEngine.Random.InitState((int)x);
+                return UnityEngine.Random.value * x;
+            }),
             new MathFunctionInfo("random/uv", t => 
             {
                 float u = Mathf.Repeat(t, 1);
@@ -286,7 +300,8 @@ public class GLMathFunction : MonoBehaviour
                 float w = Vector2.Dot(new Vector2(u, v), new Vector2(12.9898f, 78.233f)) * 43758.5453f;
                 return (w - (int)w) >= Mean ? 1 : 0;
             }),
-
+            new MathFunctionInfo("gamma/pow(x, 2.2)", x => { return Mathf.Pow(x, 2.2f); }),
+            new MathFunctionInfo("gamma/pow(x, 0.45)", x => { return Mathf.Pow(x, 0.45f); }),
         };
     }
 }
