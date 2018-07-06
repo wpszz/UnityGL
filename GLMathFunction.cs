@@ -20,6 +20,8 @@ public class GLMathFunction : MonoBehaviour
     public Color grid = Color.gray;
     public Color foreground = Color.red;
 
+    public bool pointMode = false;
+
     [Header("Gaussian")]
     [Range(0.0f, 10f)]
     public float Mean = 0f;
@@ -118,8 +120,18 @@ public class GLMathFunction : MonoBehaviour
 
                     if (prev)
                     {
-                        GL.Vertex3(PixelToRelativeX(prevX) + offsetX, PixelToRelativeX(prevY) + offsetY, 0);
-                        GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
+                        if (pointMode)
+                        {
+                            float pointX = PixelToRelativeX(prevX) + offsetX;
+                            float pointY = PixelToRelativeX(prevY) + offsetY;
+                            GL.Vertex3(pointX, pointY, 0);
+                            GL.Vertex3(pointX + 0.001f, pointY + 0.001f, 0);
+                        }
+                        else
+                        {
+                            GL.Vertex3(PixelToRelativeX(prevX) + offsetX, PixelToRelativeX(prevY) + offsetY, 0);
+                            GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
+                        }
                     }
                     else
                     {
