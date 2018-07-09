@@ -20,8 +20,8 @@ public class GLMathFunction : MonoBehaviour
     public Color grid = Color.gray;
     public Color foreground = Color.red;
 
-    [Header("RenderMode(0: line, 1: point, 2: vector)")]
-    [Range(0, 2)]
+    [Header("RenderMode(0: line, 1: point, 2: vector, 3: integral)")]
+    [Range(0, 3)]
     public int renderMode = 0;
 
     [Header("Gaussian")]
@@ -135,6 +135,13 @@ public class GLMathFunction : MonoBehaviour
                             float pointY = PixelToRelativeX(prevY) + offsetY;
                             GL.Vertex3(pointX, pointY, 0);
                             GL.Vertex3(0.5f, 0.5f, 0);
+                        }
+                        else if (renderMode == 3)
+                        {
+                            float pointX = PixelToRelativeX(prevX) + offsetX;
+                            float pointY = PixelToRelativeX(prevY) + offsetY;
+                            GL.Vertex3(pointX, pointY, 0);
+                            GL.Vertex3(pointX, 0.5f, 0);
                         }
                         else
                         {
@@ -259,20 +266,22 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("self", t => { return t; }),
             new MathFunctionInfo("last/x", t => { return lastX; }),
             new MathFunctionInfo("last/y", t => { return lastY; }),
-            new MathFunctionInfo("base/const(0)", x => { return 0; }),
+            new MathFunctionInfo("base/const(b)", x => { return Balance; }),
             new MathFunctionInfo("base/x", x => { return x; }),
             new MathFunctionInfo("base/|x|", x => { return Mathf.Abs(x); }),
             new MathFunctionInfo("base/1÷x", x => { return 1 / x; }),
+            new MathFunctionInfo("base/1÷x^b", x => { return 1 / Mathf.Pow(x, Balance); }),
             new MathFunctionInfo("base/sign(x)", x => { return Mathf.Sign(x); }),
-            new MathFunctionInfo("base/repeat(x, l)", x => { return Mathf.Repeat(x, Balance); }),
+            new MathFunctionInfo("base/repeat(x, b)", x => { return Mathf.Repeat(x, Balance); }),
             new MathFunctionInfo("base/Deg2Rad", x => { return Mathf.Deg2Rad * x; }),
             new MathFunctionInfo("base/Rad2Deg", x => { return Mathf.Rad2Deg * x; }),
-            new MathFunctionInfo("CG/step(a, x)", x => { return x >= Balance ? 1 : 0; }),
+            new MathFunctionInfo("CG/step(b, x)", x => { return x >= Balance ? 1 : 0; }),
             new MathFunctionInfo("CG/frac(x)", x => { return x - (int)x; }),
             new MathFunctionInfo("powers/x^2", x => { return x * x; }),
             new MathFunctionInfo("powers/x^3", x => { return x * x * x; }),
             new MathFunctionInfo("powers/x^0.5(√x)", x => { return Mathf.Pow(x, 0.5f); }),
             new MathFunctionInfo("powers/x^0.1(10√x)", x => { return Mathf.Pow(x, 0.1f); }),
+            new MathFunctionInfo("powers/x^b", x => { return Mathf.Pow(x, Balance); }),
             new MathFunctionInfo("exps/exp(x)", x => { return Mathf.Exp(x); }),
             new MathFunctionInfo("exps/0.5^x", x => { return Mathf.Pow(0.5f, x); }),
             new MathFunctionInfo("exps/2^x", x => { return Mathf.Pow(2, x); }),
@@ -285,6 +294,7 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("logs/xlog(x, 2)", x => { return x * Mathf.Log(x, 2); }),
             new MathFunctionInfo("logs/log(x, 10)", x => { return Mathf.Log10(x); }),
             new MathFunctionInfo("logs/xlog(x, 10)", x => { return x * Mathf.Log(x, 10); }),
+            new MathFunctionInfo("misc/(x^b)÷(e^x)", x => { return Mathf.Pow(x, Balance) / Mathf.Exp(x); }),
             new MathFunctionInfo("triangles/sin(x)", x => { return Mathf.Sin(x); }),
             new MathFunctionInfo("triangles/cos(x)", x => { return Mathf.Cos(x); }),
             new MathFunctionInfo("triangles/tan(x)", x => { return Mathf.Tan(x); }),
@@ -313,23 +323,23 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("gaussian/random(mu, sigma)", x => {
                 return GaussianRandom(Mean, Variance);
             }),
-            new MathFunctionInfo("heart/x => a(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
-            new MathFunctionInfo("heart/y => a(1 - sin(r)) * sin(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
-            new MathFunctionInfo("diamond/x => pingpong(t, a)", t => { return Mathf.PingPong(t, Balance); }),
-            new MathFunctionInfo("diamond/y => pingpong(t + 0.5a, a) - 0.5a", t => { return Mathf.PingPong(t + 0.5f * Balance, Balance) - 0.5f * Balance; }),
-            new MathFunctionInfo("water/x => a(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
+            new MathFunctionInfo("heart/x => b(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
+            new MathFunctionInfo("heart/y => b(1 - sin(r)) * sin(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
+            new MathFunctionInfo("diamond/x => pingpong(t, b)", t => { return Mathf.PingPong(t, Balance); }),
+            new MathFunctionInfo("diamond/y => pingpong(t + 0.5b, b) - 0.5b", t => { return Mathf.PingPong(t + 0.5f * Balance, Balance) - 0.5f * Balance; }),
+            new MathFunctionInfo("water/x => b(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
             new MathFunctionInfo("water/y => sin(x)", x => { return Mathf.Sin(x); }),
-            new MathFunctionInfo("circle/x => a * sin(r)", r => { return Balance * Mathf.Sin(r); }),
-            new MathFunctionInfo("circle/y => a * cos(r)", r => { return Balance * Mathf.Cos(r); }),
+            new MathFunctionInfo("circle/x => b * sin(r)", r => { return Balance * Mathf.Sin(r); }),
+            new MathFunctionInfo("circle/y => b * cos(r)", r => { return Balance * Mathf.Cos(r); }),
             new MathFunctionInfo("hyperbolic/sinh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / 2; }),
             new MathFunctionInfo("hyperbolic/cosh(x)", x => { return (Mathf.Exp(x) + Mathf.Exp(-x)) / 2; }),
             new MathFunctionInfo("hyperbolic/tanh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / (Mathf.Exp(x) + Mathf.Exp(-x)); }),
             new MathFunctionInfo("hyperbolic/sech(x)", x => { return 2 / (Mathf.Exp(x) + Mathf.Exp(-x)); }),
             new MathFunctionInfo("hyperbolic/csch(x)", x => { return 2 / (Mathf.Exp(x) - Mathf.Exp(-x)); }),
             new MathFunctionInfo("hyperbolic/coth(x)", x => { return (Mathf.Exp(x) + Mathf.Exp(-x)) / (Mathf.Exp(x) - Mathf.Exp(-x)); }),
-            new MathFunctionInfo("noise/PerlinNoise(x, 0)", x => { return Mathf.PerlinNoise(x * Balance, 0); }),
-            new MathFunctionInfo("noise/PerlinNoise(0, x)", x => { return Mathf.PerlinNoise(0, x * Balance); }),
-            new MathFunctionInfo("noise/PerlinNoise(x, x)", x => { return Mathf.PerlinNoise(x * Balance, x * Balance); }),
+            new MathFunctionInfo("noise/PerlinNoise(x * b, 0)", x => { return Mathf.PerlinNoise(x * Balance, 0); }),
+            new MathFunctionInfo("noise/PerlinNoise(0, x * b)", x => { return Mathf.PerlinNoise(0, x * Balance); }),
+            new MathFunctionInfo("noise/PerlinNoise(x * b, x * b)", x => { return Mathf.PerlinNoise(x * Balance, x * Balance); }),
             new MathFunctionInfo("random/rnd * x", x => { return UnityEngine.Random.value * x; }),
             new MathFunctionInfo("random/rnd * x(fixed seed)", x => {
                 UnityEngine.Random.InitState((int)x);
