@@ -20,12 +20,14 @@ public class GLMathFunction : MonoBehaviour
     public Color grid = Color.gray;
     public Color foreground = Color.red;
 
-    public bool pointMode = false;
+    [Header("RenderMode(0: line, 1: point, 2: vector)")]
+    [Range(0, 2)]
+    public int renderMode = 0;
 
     [Header("Gaussian")]
     [Range(0.0f, 10f)]
     public float Mean = 0f;
-    [Range(0.0f, 10f)]
+    [Range(0.01f, 10f)]
     public float Variance = 1f;
 
     [Header("Other")]
@@ -120,12 +122,19 @@ public class GLMathFunction : MonoBehaviour
 
                     if (prev)
                     {
-                        if (pointMode)
+                        if (renderMode == 1)
                         {
                             float pointX = PixelToRelativeX(prevX) + offsetX;
                             float pointY = PixelToRelativeX(prevY) + offsetY;
                             GL.Vertex3(pointX, pointY, 0);
                             GL.Vertex3(pointX + 0.001f, pointY + 0.001f, 0);
+                        }
+                        else if (renderMode == 2)
+                        {
+                            float pointX = PixelToRelativeX(prevX) + offsetX;
+                            float pointY = PixelToRelativeX(prevY) + offsetY;
+                            GL.Vertex3(pointX, pointY, 0);
+                            GL.Vertex3(0.5f, 0.5f, 0);
                         }
                         else
                         {
@@ -348,7 +357,9 @@ public class GLMathFunction : MonoBehaviour
             y = UnityEngine.Random.Range(-1.0f, 1.0f);
             r = x * x + y * y;
         } while (r >= 1 || r == 0);
-        return x * Mathf.Sqrt(-2 * Mathf.Log(r) / r);
+
+        float v = x * Mathf.Sqrt(-2 * Mathf.Log(r) / r);
+        return mu + sigma * v;
 
         // Remark:  y * Math.sqrt(-2 * Math.log(r) / r)
         // is an independent random gaussian
