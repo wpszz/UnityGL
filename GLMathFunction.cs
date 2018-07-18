@@ -126,27 +126,24 @@ public class GLMathFunction : MonoBehaviour
                         {
                             float pointX = PixelToRelativeX(prevX) + offsetX;
                             float pointY = PixelToRelativeX(prevY) + offsetY;
-                            GL.Vertex3(pointX, pointY, 0);
-                            GL.Vertex3(pointX + 0.001f, pointY + 0.001f, 0);
+                            DrawSegmentWithCull(pointX, pointY, pointX + 0.001f, pointY + 0.001f);
                         }
                         else if (renderMode == 2)
                         {
                             float pointX = PixelToRelativeX(prevX) + offsetX;
                             float pointY = PixelToRelativeX(prevY) + offsetY;
-                            GL.Vertex3(pointX, pointY, 0);
-                            GL.Vertex3(0.5f, 0.5f, 0);
+                            DrawSegmentWithCull(pointX, pointY, 0.5f, 0.5f);
                         }
                         else if (renderMode == 3)
                         {
                             float pointX = PixelToRelativeX(prevX) + offsetX;
                             float pointY = PixelToRelativeX(prevY) + offsetY;
-                            GL.Vertex3(pointX, pointY, 0);
-                            GL.Vertex3(pointX, 0.5f, 0);
+                            DrawSegmentWithCull(pointX, pointY, pointX, 0.5f);
                         }
                         else
                         {
-                            GL.Vertex3(PixelToRelativeX(prevX) + offsetX, PixelToRelativeX(prevY) + offsetY, 0);
-                            GL.Vertex3(PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY, 0);
+                            DrawSegmentWithCull(PixelToRelativeX(prevX) + offsetX, PixelToRelativeX(prevY) + offsetY,
+                                                PixelToRelativeX(x1) + offsetX, PixelToRelativeX(y1) + offsetY);
                         }
                     }
                     else
@@ -161,6 +158,16 @@ public class GLMathFunction : MonoBehaviour
         }
 
         GL.PopMatrix();
+    }
+
+    private void DrawSegmentWithCull(float x1, float y1, float x2, float y2)
+    {
+        // simple cull
+        if (x1 < 0f && x2 < 0f || x1 > 1f && x2 > 1f || y1 < 0f && y2 < 0f || y1 > 1f && y2 > 1f)
+            return;
+
+        GL.Vertex3(x1, y1, 0);
+        GL.Vertex3(x2, y2, 0);
     }
 
     private bool IsValidFloat(float v)
@@ -323,14 +330,16 @@ public class GLMathFunction : MonoBehaviour
             new MathFunctionInfo("gaussian/random(mu, sigma)", x => {
                 return GaussianRandom(Mean, Variance);
             }),
-            new MathFunctionInfo("heart/x => b(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
-            new MathFunctionInfo("heart/y => b(1 - sin(r)) * sin(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Sin(r); }),
             new MathFunctionInfo("diamond/x => pingpong(t, b)", t => { return Mathf.PingPong(t, Balance); }),
             new MathFunctionInfo("diamond/y => pingpong(t + 0.5b, b) - 0.5b", t => { return Mathf.PingPong(t + 0.5f * Balance, Balance) - 0.5f * Balance; }),
-            new MathFunctionInfo("water/x => b(1 - sin(r)) * cos(r)", r => { return Balance * (1 - Mathf.Sin(r)) * Mathf.Cos(r); }),
-            new MathFunctionInfo("water/y => sin(x)", x => { return Mathf.Sin(x); }),
-            new MathFunctionInfo("circle/x => b * sin(r)", r => { return Balance * Mathf.Sin(r); }),
-            new MathFunctionInfo("circle/y => b * cos(r)", r => { return Balance * Mathf.Cos(r); }),
+            new MathFunctionInfo("polarCoordinates/circle/x => b * cos(θ)", theta => { return Balance * Mathf.Cos(theta); }),
+            new MathFunctionInfo("polarCoordinates/circle/y => b * sin(θ)", theta => { return Balance * Mathf.Sin(theta); }),
+            new MathFunctionInfo("polarCoordinates/heart/x => b(1 - sin(θ)) * cos(θ)", theta => { return Balance * (1 - Mathf.Sin(theta)) * Mathf.Cos(theta); }),
+            new MathFunctionInfo("polarCoordinates/heart/y => b(1 - sin(θ)) * sin(θ)", theta => { return Balance * (1 - Mathf.Sin(theta)) * Mathf.Sin(theta); }),
+            new MathFunctionInfo("polarCoordinates/water/x => b(1 - sin(θ)) * cos(θ)", theta => { return Balance * (1 - Mathf.Sin(theta)) * Mathf.Cos(theta); }),
+            new MathFunctionInfo("polarCoordinates/water/y => sin(θ)", theta => { return Mathf.Sin(theta); }),
+            new MathFunctionInfo("polarCoordinates/spiral/x => b(θ÷π) * cos(θ)", theta => { return Balance * (theta / Mathf.PI) * Mathf.Cos(theta); }),
+            new MathFunctionInfo("polarCoordinates/spiral/y => b(θ÷π) * sin(θ)", theta => { return Balance * (theta / Mathf.PI) * Mathf.Sin(theta); }),
             new MathFunctionInfo("hyperbolic/sinh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / 2; }),
             new MathFunctionInfo("hyperbolic/cosh(x)", x => { return (Mathf.Exp(x) + Mathf.Exp(-x)) / 2; }),
             new MathFunctionInfo("hyperbolic/tanh(x)", x => { return (Mathf.Exp(x) - Mathf.Exp(-x)) / (Mathf.Exp(x) + Mathf.Exp(-x)); }),
